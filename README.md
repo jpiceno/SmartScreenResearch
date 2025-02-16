@@ -22,23 +22,18 @@ Microsoft Defender SmartScreen helps protect users from malicious content by war
 ### MDM (Intune) Settings
 Organizations using Microsoft Intune can configure SmartScreen with MDM policies.
 
-| Setting | Function |
-|---------|----------|
-| AllowSmartScreen | Enables SmartScreen protection. |
-| EnableAppInstallControl | Controls app installations from external sources. |
-| EnableSmartScreenInShell | Enables SmartScreen protection in Windows Explorer. |
-| PreventOverrideForFilesInShell | Prevents users from bypassing warnings for malicious files. |
-| PreventSmartScreenPromptOverride | Blocks users from bypassing website warnings. |
-| PreventSmartScreenPromptOverrideForFiles | Blocks users from downloading unsafe files. |
-
-### Recommended Settings for Organizations
-Microsoft recommends blocking high-risk interactions instead of just showing warnings.
-
-| Group Policy Setting | Recommended Action |
-|----------------------|--------------------|
-| Configure Windows Defender SmartScreen (Microsoft Edge) | Enable – Turns on SmartScreen protection. |
-| Prevent bypassing Windows Defender SmartScreen prompts for sites | Enable – Blocks users from overriding security warnings. |
-| Configure Windows Defender SmartScreen (Explorer) | Enable with Warn and Prevent Bypass – Ensures users can't bypass malicious file warnings. |
+| MDM Setting | Recommended Action |
+|-------------|--------------------|
+| **Browser/AllowSmartScreen** | **1 – Turns on SmartScreen.** |
+| `./Device/Vendor/MSFT/Policy/Config/Browser/AllowSmartScreen` |  |
+| **Browser/PreventSmartScreenPromptOverride** | **1 – Blocks users from ignoring website warnings.** |
+| `./Device/Vendor/MSFT/Policy/Config/Browser/PreventSmartScreenPromptOverride` |  |
+| **Browser/PreventSmartScreenPromptOverrideForFiles** | **1 – Blocks users from ignoring file download warnings.** |
+| `./Device/Vendor/MSFT/Policy/Config/Browser/PreventSmartScreenPromptOverrideForFiles` |  |
+| **SmartScreen/EnableSmartScreenInShell** | **1 – Enables SmartScreen in Windows Explorer.** |
+| `./Device/Vendor/MSFT/Policy/Config/SmartScreen/EnableSmartScreenInShell` |  |
+| **SmartScreen/PreventOverrideForFilesInShell** | **1 – Blocks users from bypassing file warnings.** |
+| `./Device/Vendor/MSFT/Policy/Config/SmartScreen/PreventOverrideForFilesInShell` |  |
 
 ---
 
@@ -120,15 +115,3 @@ Set-MpPreference -AllowSwitchToAsyncInspection $true
 ✔ Test in **Audit Mode** before enforcing blocks to prevent unintended disruptions.
 ✔ **Disable QUIC Protocol** to ensure all web traffic is inspected.
 ✔ Use **Custom Indicators** to define organization-specific block/allow lists.
-
----
-
-## Testing Smart Screen Implementations
-1. **Windows Defender SmartScreen Connectivity Test:** [GitHub - Microsoft Connectivity Tester](https://github.com/nsacyber/HTTP-Connectivity-Tester)
-2. **Microsoft Defender for Endpoint Demonstration Scenarios:**
-   - [PUA Demonstration](https://learn.microsoft.com/en-us/microsoft-defender-endpoint/pua-protection)
-   - [URL Reputation Demonstration](https://learn.microsoft.com/en-us/microsoft-defender-endpoint/smartscreen-url-reputation)
-
----
-
-This document provides an overview of Microsoft Defender SmartScreen, its settings, configurations, and best practices for organizations. For further details, visit the **Microsoft Learn** documentation.
