@@ -99,3 +99,130 @@ Organizations using Microsoft Intune can configure SmartScreen with MDM policies
   - Controls whether users can bypass SmartScreen warnings and run files flagged as malicious.
   - **Default:** `0` (Users can override warnings).
   - `1` (Enabled) – Users cannot bypass SmartScreen warnings.
+ 
+# Network Protection in Microsoft Defender for Endpoint
+
+Microsoft Defender for Endpoint (MDE) includes **Network Protection**, a security feature that helps prevent users from accessing malicious or suspicious websites and IPs. It is part of attack surface reduction and works by blocking outbound HTTP(S) connections to domains with a low reputation or those known for cyberattacks.
+
+## Key Features of Network Protection
+
+### Preventing Access to Malicious Sites
+- Blocks access to websites hosting phishing scams, malware, and exploits.
+- Works at the **operating system level**, expanding SmartScreen protection beyond just Microsoft Edge.
+- Provides visibility and blocking of **indicators of compromise (IOCs)** in endpoint detection and response (EDR).
+
+### Coverage Across Different Applications
+
+| Feature | Microsoft Edge | Non-Microsoft Browsers | Non-Browser Apps (e.g., PowerShell) |
+|---------|---------------|---------------------|------------------|
+| Web Threat Protection | Requires SmartScreen | Requires Network Protection (Block Mode) | Requires Network Protection (Block Mode) |
+| Custom Indicators (Block/Allow Lists) | Requires SmartScreen | Requires Network Protection (Block Mode) | Requires Network Protection (Block Mode) |
+| Web Content Filtering | Requires SmartScreen | Requires Network Protection (Block Mode) | Not Supported |
+
+## Requirements for Network Protection
+- Requires **Microsoft Defender Antivirus** with:
+  - Real-time protection, cloud-delivered protection, and behavior monitoring enabled.
+- **Windows Server 2012 R2 & 2016**: Needs modern unified agent (version 4.18.2001.x.x or newer).
+
+## Why Network Protection is Important
+- Prevents malware infections by blocking **Command and Control (C2) servers** used in ransomware and botnets.
+- Enforces security policies, including:
+  - Blocking unsanctioned services (**Microsoft Defender for Cloud Apps**).
+  - Web content filtering (**Blocking access to certain website categories**).
+- Protects against phishing by integrating **SmartScreen intelligence**.
+
+## Network Protection Blocking & Notifications
+
+| Scenario | Behavior |
+|----------|----------|
+| Safe Website | No block, access allowed |
+| Unknown Reputation | User sees a warning (toast notification), can "Unblock" the site for 24 hours or submit a request for access. |
+| Malicious URL/IP | Access fully blocked, only admin overrides possible. |
+
+- Admins can allow "unblock" for up to 24 hours for certain URLs.
+- Notifications categories:
+  - **Phishing** (SmartScreen)
+  - **Malicious Content** (SmartScreen)
+  - **Command & Control (C2)** (SmartScreen)
+  - **Custom Block Lists & Policies** (Admin-configured)
+
+## Enabling & Configuring Network Protection
+
+### 1. Group Policy (GPO)
+- **Path:** `Computer Configuration > Administrative Templates > Windows Defender Antivirus > Network Inspection System`
+- **Setting:** Convert warn verdict to block → **Enabled**
+
+### 2. PowerShell Command:
+```powershell
+Set-MpPreference -EnableNetworkProtection Enabled
+```
+
+### 3. MDM CSP (Intune)
+- Configured via **Microsoft Defender for Endpoint portal**.
+- Steps:
+  1. Sign into the **Microsoft Intune admin center**.
+  2. Go to **Endpoint security > Security baselines > Microsoft Defender for Endpoint Baseline**.
+  3. Select **Create a profile**, provide a name, then **Next**.
+  4. In **Configuration settings**, navigate to **Attack Surface Reduction Rules** > **Enable network protection** and select **Block, Enable, or Audit**. Then click **Next**.
+  5. Select appropriate **Scope tags** and **Assignments** as needed.
+  6. Review and click **Create**.
+
+### 4. Registry Settings
+```powershell
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection" -Name "EnableNetworkProtection" -Value 1
+```
+
+## Monitoring & Hunting for Network Protection Events
+- **Audit Mode**: Logs blocked connections without enforcing a block.
+- **Advanced Hunting Queries (Defender for Endpoint):**
+```kusto
+DeviceEvents
+| where ActionType in ('ExploitGuardNetworkProtectionAudited','ExploitGuardNetworkProtectionBlocked')
+```
+
+- **Event Viewer Logs:**
+  - **ID 1125** → Audit Mode triggered
+  - **ID 1126** → Block Mode triggered
+
+## Additional Considerations
+
+### Command & Control (C2) Detection & Blocking
+- Breaks connection to hacker-controlled servers used for:
+  - **Stealing data**
+  - **Controlling botnets**
+  - **Spreading malware**
+
+### Network Protection and TCP Handshake
+- Blocks traffic **after** the **TCP three-way handshake** completes.
+- Logs may initially show "ConnectionSuccess" even if a site is later blocked.
+
+## Optimizing Network Protection Performance
+
+### Enable Asynchronous Inspection
+```powershell
+Set-MpPreference -AllowSwitchToAsyncInspection $true
+```
+
+### Disable QUIC Protocol (to ensure traffic inspection):
+- **Edge:** `edge://flags/#enable-quic` → Disabled
+- **Chrome:** `chrome://flags/#enable-quic` → Disabled
+
+## Recommendations
+✔ **Enable Network Protection in Block Mode** to enforce security policies.
+✔ **Use Advanced Hunting in Defender for Endpoint** to monitor network events.
+✔ **Test in Audit Mode** before enforcing blocks to prevent unintended disruptions.
+✔ **Disable QUIC Protocol** to ensure all web traffic is inspected.
+✔ **Use Custom Indicators** to define organization-specific block/allow lists.
+
+---
+
+## Testing SmartScreen Implementations
+1. **Windows Defender SmartScreen Connectivity Test:** [GitHub - Microsoft Connectivity Tester](https://github.com/nsacyber/HTTP-Connectivity-Tester)
+2. **Microsoft Defender for Endpoint Demonstration Scenarios:**
+   - [PUA Demonstration](https://learn.microsoft.com/en-us/microsoft-defender-endpoint/pua-protection)
+   - [URL Reputation Demonstration](https://learn.microsoft.com/en-us/microsoft-defender-endpoint/smartscreen-url-reputation)
+
+---
+
+This document provides an overview of **Network Protection in Microsoft Defender for Endpoint**, its configurations, and best practices for organizations. For further details, visit **Microsoft Learn**.
+
