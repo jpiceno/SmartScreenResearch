@@ -35,83 +35,67 @@ Organizations using Microsoft Intune can configure SmartScreen with MDM policies
 | **SmartScreen/PreventOverrideForFilesInShell** | **1 – Blocks users from bypassing file warnings.** |
 | `./Device/Vendor/MSFT/Policy/Config/SmartScreen/PreventOverrideForFilesInShell` |  |
 
----
+### Related Browser Policy CSP
 
-## Enhanced Phishing Protection in Microsoft Defender SmartScreen
+#### Key Policy Categories & Functions
+##### Security & Privacy Controls
+- **AllowSmartScreen** – Enables or disables Microsoft Defender SmartScreen, which warns users about phishing sites and malicious downloads.
+- **PreventSmartScreenPromptOverride** – Prevents users from bypassing SmartScreen security warnings for malicious websites.
+- **PreventSmartScreenPromptOverrideForFiles** – Blocks users from ignoring SmartScreen warnings on file downloads.
+- **PreventCertErrorOverrides** – Restricts users from overriding SSL/TLS certificate errors.
+- **AllowDoNotTrack** – Enables "Do Not Track" requests to websites.
+- **AllowCookies** – Configures whether all, third-party, or no cookies are allowed.
 
-Enhanced Phishing Protection in Microsoft Defender SmartScreen helps safeguard **Microsoft work or school passwords** against phishing attacks and unsafe usage in **Windows 11 (22H2)**.
+##### User Experience & UI Customization
+- **AllowAddressBarDropdown** – Controls whether search suggestions appear in the address bar.
+- **AllowAutofill** – Manages Autofill settings for form fields.
+- **AllowBrowser** – Determines whether Edge can be used as a browser. *(Deprecated)*
+- **AllowSearchEngineCustomization** – Allows users to customize their default search engine.
+- **ConfigureHomeButton** – Locks down or customizes the Home button behavior.
+- **AllowWebContentOnNewTabPage** – Configures whether the New Tab Page loads with content or remains blank.
 
-### Key Benefits
-1. **Anti-Phishing Protection:**
-   - Detects phishing sites and credential harvesting attacks.
-   - Warns users when they enter passwords into malicious sites.
-2. **OS-Level Security Integration:**
-   - Works across all browsers and apps, not just Microsoft Edge.
-   - Detects unsafe password entry in any application.
-3. **Microsoft Security Suite Integration:**
-   - Provides detailed telemetry data for Microsoft Defender for Endpoint (MDE).
-   - Helps organizations track phishing attempts and password security risks.
+##### Performance & Startup Settings
+- **AllowPrelaunch** – Enables Edge pre-launch at Windows startup, reducing load times.
+- **AllowTabPreloading** – Allows Edge to preload the Start and New Tab pages for faster access.
+- **ConfigureOpenMicrosoftEdgeWith** – Controls how Edge starts (New Tab, Start Page, or custom URL).
+- **PreventFirstRunPage** – Stops the Microsoft Edge First Run page from appearing at launch.
 
-### Configuration & Policy Settings
+##### Extensions & Add-ons
+- **AllowExtensions** – Controls whether users can install browser extensions.
+- **PreventTurningOffRequiredExtensions** – Prevents users from disabling preinstalled enterprise extensions.
+- **AllowSideloadingOfExtensions** – Allows or blocks sideloading of extensions outside the Microsoft Store.
 
-| Setting | Description | Recommendation |
-|---------|------------|---------------|
-| Automatic Data Collection | Collects additional information (like displayed content and memory usage) when passwords are entered on suspicious sites. | Enable |
-| Service Enabled | Enables audit mode to capture password entry events but does not show user notifications. | Enable |
-| Notify Malicious | Warns users when they enter work/school passwords on phishing or insecure sites. | Enable |
-| Notify Password Reuse | Warns users when they reuse their work or school password across multiple sites or apps. | Enable |
-| Notify Unsafe App | Warns users when they store passwords in Notepad, Word, or Microsoft 365 apps. | Enable |
+##### Enterprise & Compatibility Settings
+- **EnterpriseModeSiteList** – Configures Enterprise Mode, forcing certain websites to open in Internet Explorer 11 for compatibility.
+- **SendIntranetTrafficToInternetExplorer** – Forces intranet sites to open in IE11.
+- **SyncFavoritesBetweenIEAndMicrosoftEdge** – Synchronizes bookmarks between IE and Edge.
 
-### Deployment Methods
-Organizations can apply these settings using:
-- **Microsoft Intune** (Settings Catalog under "SmartScreen > Enhanced Phishing Protection")
-- **Group Policy (GPO)**
-- **Configuration Service Provider (CSP)**
+##### Miscellaneous Settings
+- **AllowPrinting** – Controls whether users can print web content.
+- **AllowDeveloperTools** – Enables or disables access to F12 Developer Tools.
+- **PreventAccessToAboutFlagsInMicrosoftEdge** – Blocks users from accessing about:flags settings.
+- **LockdownFavorites** – Prevents users from editing or removing preconfigured Favorites.
+- **ClearBrowsingDataOnExit** – Automatically deletes browsing history when Edge is closed.
 
----
+### Related SmartScreen Policy CSP
 
-## Network Protection in Microsoft Defender for Endpoint
+#### Application Installation Control
+- **EnableAppInstallControl**
+  - Restricts or allows app installations from sources other than the Microsoft Store.
+  - Requires `SmartScreen/EnableSmartScreenInShell` and `SmartScreen/PreventOverrideForFilesInShell` to block offline installations.
+  - **Options:**
+    - `0` (Default) – Allows apps from any source.
+    - `1` – Only allows apps from the Microsoft Store.
+    - `2` – Notifies users about comparable apps in the Store.
+    - `3` – Warns users before installing apps outside the Store.
 
-Network Protection is a security feature in **Microsoft Defender for Endpoint (MDE)** that helps prevent users from accessing malicious or suspicious websites and IPs.
+#### Enabling SmartScreen for Windows
+- **EnableSmartScreenInShell**
+  - Enables or disables Windows Defender SmartScreen for Windows Explorer.
+  - **Default:** Enabled (`1`) – Protects users from downloading or running suspicious files.
 
-### Key Features
-- **Prevents access to malicious sites**
-- **Works at the OS level**, expanding SmartScreen protection beyond just Microsoft Edge.
-- **Provides visibility and blocking of Indicators of Compromise (IOCs) in endpoint detection and response (EDR).**
-
-### Coverage Across Different Applications
-| Feature | Microsoft Edge | Non-Microsoft Browsers | Non-Browser Apps (e.g., PowerShell) |
-|---------|---------------|---------------------|------------------|
-| Web Threat Protection | Requires SmartScreen | Requires Network Protection (Block Mode) | Requires Network Protection (Block Mode) |
-| Custom Indicators (Block/Allow Lists) | Requires SmartScreen | Requires Network Protection (Block Mode) | Requires Network Protection (Block Mode) |
-| Web Content Filtering | Requires SmartScreen | Requires Network Protection (Block Mode) | Not Supported |
-
-### Enabling & Configuring Network Protection
-Network Protection can be enabled using:
-1. **Group Policy (GPO)**
-   - Path: `Computer Configuration > Administrative Templates > Windows Defender Antivirus > Network Inspection System`
-   - Setting: Convert warn verdict to block → Enabled
-2. **PowerShell Command:**
-   ```powershell
-   Set-MpPreference -EnableNetworkProtection Enabled
-   ```
-3. **MDM CSP (Intune):**
-   - Configured via **Microsoft Defender for Endpoint portal**.
-4. **Registry Settings:**
-   - `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Windows Defender Exploit Guard\Network Protection`
-   - Set `EnableNetworkProtection` to **1 (Enabled)**
-
-### Optimizing Network Protection Performance
-```powershell
-Set-MpPreference -AllowSwitchToAsyncInspection $true
-```
-- **Disable QUIC Protocol (ensures traffic inspection):**
-  - Edge: `edge://flags/#enable-quic` → Disabled
-  - Chrome: `chrome://flags/#enable-quic` → Disabled
-
-### Recommendations
-✔ Enable **Network Protection in Block Mode** to enforce security policies.
-✔ Use **Advanced Hunting in Defender for Endpoint** to monitor network events.
-✔ Test in **Audit Mode** before enforcing blocks to prevent unintended disruptions.
-✔ **Disable QUIC Protocol** to ensure all web traffic is inspected.
-✔ Use **Custom Indicators** to define organization-specific block/allow lists.
+#### Preventing User Overrides for SmartScreen Warnings
+- **PreventOverrideForFilesInShell**
+  - Controls whether users can bypass SmartScreen warnings and run files flagged as malicious.
+  - **Default:** `0` (Users can override warnings).
+  - `1` (Enabled) – Users cannot bypass SmartScreen warnings.
